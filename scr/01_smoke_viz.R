@@ -1,6 +1,7 @@
 library(tidyverse)
 library(here)
 library(ggridges)
+library(viridis)
 
 
 # 1. Read data ------------------------------------------------------------
@@ -52,13 +53,40 @@ ggplot(smoke_ts, aes(x = smoke_all_area_km2, y = as.factor(year), group = year, 
 
 smoke_ts2 <- smoke_ts %>% 
   mutate(
-    season = as.factor(if_else(month>=3 & month<=5, 'spring', 
-                     if_else(month>=6 & month<=8, 'summer',
-                             if_else(month>=9 & month<=11, 'fall', 'winter'))))
+    season = as.factor(
+      if_else(month>=3 & month<=5, 'Spring', 
+             if_else(month>=6 & month<=8, 'Summer',
+                    if_else(month>=9 & month<=11, 'Fall', 'Winter')))
+      )
   )
 
 # Seasonal boxplot shows area covered by season, colored by year (to see standouts?)
 
+ggplot(data = smoke_ts2, aes(x = season, y = smoke_all_area_km2))+
+  geom_boxplot()+
+  geom_jitter(aes(color=year), size=2, alpha=0.9)+
+  scale_color_viridis()+
+  xlab('Season')+
+  ylab(bquote('Smoke Cover'~(km^2)))+
+  theme_classic()+
+  theme(
+    text = element_text(size = 25),
+    legend.title = element_blank()
+  )
+O)
 
+
+# 6. Time series plot  ----------------------------------------------------
+
+#Adjust the data for the time series
+
+smoke_ts3 = smoke_ts2 %>% 
+  group_by(year, month) %>% 
+  summarise(mean_smoke_km2 = mean(smoke_all_area_km2),
+            median_smoke_km2 = median(smoke_all_area_km2)) %>% 
+  mutate(
+    date = 
+  )
+  
 
 
