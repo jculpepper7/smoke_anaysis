@@ -2,7 +2,7 @@ library(tidyverse)
 library(here)
 library(ggridges)
 library(viridis)
-
+library(wql) #trend analysis
 
 # 1. Read data ------------------------------------------------------------
 
@@ -10,6 +10,7 @@ smoke <- read_csv(here('data/monthly_smoke_area.csv'))
 
 summary(smoke)
 
+ifelse(!dir.exists("results"), dir.create("results"), "Folder exists already")
 
 # 2. Clean data -----------------------------------------------------------
 
@@ -45,6 +46,8 @@ ggplot(smoke_ts, aes(x = smoke_all_area_km2, y = as.factor(year), group = year, 
     axis.title.x = element_text(hjust = 0.5),
     axis.title.y = element_text(hjust = 0.5)
   )
+
+ggsave(here('results/ridgeline_plt.png'), dpi = 300, units = 'in', width = 14, height = 8)
   
   
 # 5. Seeasonal Boxplot ----------------------------------------------------
@@ -73,8 +76,8 @@ ggplot(data = smoke_ts2, aes(x = season, y = smoke_all_area_km2))+
     text = element_text(size = 25),
     legend.title = element_blank()
   )
-O)
 
+ggsave(here('results/box_plt_by_season.png'), dpi = 300, units = 'in', width = 14, height = 8)
 
 # 6. Time series plot  ----------------------------------------------------
 
@@ -84,9 +87,47 @@ smoke_ts3 = smoke_ts2 %>%
   group_by(year, month) %>% 
   summarise(mean_smoke_km2 = mean(smoke_all_area_km2),
             median_smoke_km2 = median(smoke_all_area_km2)) %>% 
-  mutate(
-    date = 
+  unite(month_year, c(month, year), sep = "-") %>%
+  mutate(date = parse_date_time(month_year, "my")) %>% 
+  select(-month_year) %>% 
+  select(3,1,2)
+
+ggplot(data = smoke_ts3, aes(x = date, y = mean_smoke_km2))+
+  geom_point()+
+  geom_line()
+
+smoke_ts4 = smoke_ts2 %>% 
+  group_by(year) %>% 
+  summarise(
+    mean_smoke_km2 = mean(smoke_all_area_km2),
+    median_smoke_km2 = median(smoke_all_area_km2)
   )
-  
+
+ggplot(data = smoke_ts4, aes(x = year, y = mean_smoke_km2))+
+  geom_smooth(method = lm, color = 'grey50', linetype = 'dashed')+
+  geom_point(size = 2.5)+
+  theme_classic()+
+  theme(
+    text = element_text(size = 25)
+  )+
+  xlab('Year')+
+  ylab(bquote('Smoke Cover'~(km^2)))
+
+ggsave(here('results/smoke_ts_yearly.png'), dpi = 300, units = 'in', width = 14, height = 8)
+
+# Looks interesting. What does a Mann-Kendall test tell us and what is the Sen's slope?
+
+smoke_mk <- smoke_ts4 %>% 
+  summarize(smoke_sen = mannKen(mean_smoke_km2)$sen.slope,
+            smoke_pval = mannKen(mean_smoke_km2)$p.value,
+            smoke_med_sen = mannKen(median_smoke_km2)$sen.slope,
+            smoke_med_pval = mannKen(median_smoke_km2)$p.value)
 
 
+#mean smoke cover
+#p value < 0.01
+#slope 11,189 km^2 per year
+
+#median smoke cover
+#p value < 0.05
+#slope 8,203

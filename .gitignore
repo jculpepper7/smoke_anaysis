@@ -1,6 +1,9 @@
 #Ignore data
 *.csv
 
+#Ignore figures
+*.png
+
 # History files
 .Rhistory
 .Rapp.history
