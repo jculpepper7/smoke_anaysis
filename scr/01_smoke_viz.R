@@ -131,3 +131,20 @@ smoke_mk <- smoke_ts4 %>%
 #median smoke cover
 #p value < 0.05
 #slope 8,203
+
+
+
+
+# 7. More time series analysis --------------------------------------------
+
+
+
+# Could you potentially test for trends in the following variables (I attached the datasets Minmeng generated for me last week):
+#   -annual smoke area in CA (all densities) (what you already showed in the meeting)
+# -annual smoke area in CA (med-high density smoke only; there's now a new column in the csv file with this number)
+# -annual number of smoke days (med-high density) for each of our study sites (the spreadsheet contains more sites than we actually used, so there's no need to compute trends for them all).
+# You could just dump the results in our outline for now. Let me know if you have questions or want to meet separately about this.
+
+
+
+
