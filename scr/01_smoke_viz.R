@@ -12,17 +12,40 @@ summary(smoke)
 
 ifelse(!dir.exists("results"), dir.create("results"), "Folder exists already")
 
+monthly_smoke <- read_csv(here('data/01_monthly_smoke_area_CA.csv'))
+
+rapid_sites <- read_csv(here('data/01_RAPID_sites_smoke_density.csv'))
+
 # 2. Clean data -----------------------------------------------------------
 
 smoke_ts <- smoke %>% 
-  mutate(date = with(., sprintf("%d-%02d", year, month)),
-         smoke_all_area_km2 = round(smoke_all_area_m2/1000000, digits = 0))
+  mutate(
+    date = with(., sprintf("%d-%02d", year, month)),
+    smoke_all_area_km2 = round(smoke_all_area_m2/1000000, digits = 0)
+         )
 
+monthly_ts <- monthly_smoke %>% 
+  mutate(
+    date = with(., sprintf("%d-%02d", year, month)),
+    smoke_all_area_km2 = round(smoke_all_area_m2/1000000, digits = 0)
+         )
+
+rapid_ts <- rapid_sites %>% 
+  mutate(
+    date = with(., sprintf("%d-%02d", year, month)),
+    smoke_all_area_km2 = round(smoke_all_area_m2/1000000, digits = 0)
+         )
 
 # 3. Initial plot ---------------------------------------------------------
 
 ggplot()+
   geom_point(data = smoke_ts, aes(x = date, y = smoke_all_area_percent))+
+  theme_classic()+
+  ylab('Smoke Area (%)')+
+  xlab('Date')
+
+ggplot()+
+  geom_point(data = monthly_smoke, aes(x = date, y = smoke_all_area_percent))+
   theme_classic()+
   ylab('Smoke Area (%)')+
   xlab('Date')
@@ -47,7 +70,7 @@ ggplot(smoke_ts, aes(x = smoke_all_area_km2, y = as.factor(year), group = year, 
     axis.title.y = element_text(hjust = 0.5)
   )
 
-ggsave(here('results/ridgeline_plt.png'), dpi = 300, units = 'in', width = 14, height = 8)
+#ggsave(here('results/ridgeline_plt.png'), dpi = 300, units = 'in', width = 14, height = 8)
   
   
 # 5. Seeasonal Boxplot ----------------------------------------------------
@@ -77,7 +100,7 @@ ggplot(data = smoke_ts2, aes(x = season, y = smoke_all_area_km2))+
     legend.title = element_blank()
   )
 
-ggsave(here('results/box_plt_by_season.png'), dpi = 300, units = 'in', width = 14, height = 8)
+#ggsave(here('results/box_plt_by_season.png'), dpi = 300, units = 'in', width = 14, height = 8)
 
 # 6. Time series plot  ----------------------------------------------------
 
@@ -113,7 +136,7 @@ ggplot(data = smoke_ts4, aes(x = year, y = mean_smoke_km2))+
   xlab('Year')+
   ylab(bquote('Smoke Cover'~(km^2)))
 
-ggsave(here('results/smoke_ts_yearly.png'), dpi = 300, units = 'in', width = 14, height = 8)
+#ggsave(here('results/smoke_ts_yearly.png'), dpi = 300, units = 'in', width = 14, height = 8)
 
 # Looks interesting. What does a Mann-Kendall test tell us and what is the Sen's slope?
 
@@ -139,12 +162,12 @@ smoke_mk <- smoke_ts4 %>%
 
 
 
-# Could you potentially test for trends in the following variables (I attached the datasets Minmeng generated for me last week):
-#   -annual smoke area in CA (all densities) (what you already showed in the meeting)
+# Could you potentially test for trends in the following variables (I attached 
+#the datasets Minmeng generated for me last week):
+# -annual smoke area in CA (all densities) (what you already showed in the meeting)
 # -annual smoke area in CA (med-high density smoke only; there's now a new column in the csv file with this number)
 # -annual number of smoke days (med-high density) for each of our study sites (the spreadsheet contains more sites than we actually used, so there's no need to compute trends for them all).
 # You could just dump the results in our outline for now. Let me know if you have questions or want to meet separately about this.
-
 
 
 
